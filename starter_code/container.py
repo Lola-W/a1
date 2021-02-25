@@ -48,7 +48,7 @@ class Container:
 # Used in the doctest examples for PriorityQueue
 def _shorter(a: str, b: str) -> bool:
     """
-    Return True if <a> is shorter than <b>. a
+    Return True if <a> is shorter than <b>. aa
     """
     return len(a) < len(b)
 
