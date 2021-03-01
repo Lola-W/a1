@@ -20,20 +20,79 @@ Sophia Huynh, Myriam Majedi, and Jaisie Sin.
 This module contains the classes required to represent the entities
 in the simulation: Parcel, Truck and Fleet.
 """
-from typing import List, Dict, Tuple
+from typing import List, Dict
 from distance_map import DistanceMap
 
 
 class Parcel:
-    # TODO: Implement this class!
-    # It must be consistent with the Fleet class docstring examples below.
-    pass
+    """ A parcel.
+
+    ===== Public Attributes =====
+    parcel_id:
+      unique id of the parcel.
+    volume:
+      The volumes of the parcel in cc.
+    source:
+      the name of the city the parcel came from
+    destination:
+      the name of the city where it must be delivered to
+    """
+    parcel_id: int
+    volume: int
+    source: str
+    destination: str
+    def __init__(self, parcel_id: int, volume: int,
+                 source: str, destination: str) -> None:
+        self.parcel_id = parcel_id
+        self.volume = volume
+        self.source = source
+        self.destination = destination
 
 
 class Truck:
-    # TODO: Implement this class!
-    # It must be consistent with the Fleet class docstring examples below.
-    pass
+    """ A truck.
+
+    ===== Public Attributes =====
+    truck_id:
+      unique id of the truck
+    volume_capacity:
+      The maximum sum of the volumes of the parcels on a truck
+    route:
+      an ordered list of city names that the truck plans to travel through
+    """
+    truck_id: int
+    volume_capacity: int
+    depot: str
+    route: list[str]
+    parcels: List[Parcel]
+
+    def __init__(self, truck_id: int, volume_capacity: int, depot: str) -> None:
+        self.truck_id = truck_id
+        self.volume_capacity = volume_capacity
+        self.depot = depot
+        self.route = [self.depot]
+        self.parcels = []
+
+    def fullness(self) -> float:
+        """
+        Return the percent fullness of the truck
+        """
+        count = 0.0
+        for p in self.parcels:
+            count += p.volume
+        return (100 * count) / self.volume_capacity
+
+    def pack(self, p: Parcel) -> bool:
+        """
+        Packing a parcel into the truck
+        """
+        if self.fullness() == 0.0 or\
+                p.volume <= (self.fullness() * self.volume_capacity):
+            self.parcels.append(p)
+            if p.destination != self.route[-1]:
+                self.route.append(p.destination)
+            return True
+        return False
 
 
 class Fleet:
@@ -52,8 +111,8 @@ class Fleet:
         >>> f.num_trucks()
         0
         """
-        # TODO: Complete this method.
-        pass
+
+        self.trucks = []
 
     def add_truck(self, truck: Truck) -> None:
         """Add <truck> to this fleet.
@@ -67,15 +126,14 @@ class Fleet:
         >>> f.num_trucks()
         1
         """
-        # TODO: Complete this method.
-        pass
+        self.trucks.append(truck)
 
     # We will not test the format of the string that you return -- it is up
     # to you.
     def __str__(self) -> str:
         """Produce a string representation of this fleet
         """
-        # TODO: Complete this method.
+
         pass
 
     def num_trucks(self) -> int:
@@ -87,8 +145,8 @@ class Fleet:
         >>> f.num_trucks()
         1
         """
-        # TODO: Complete this method.
-        pass
+
+        return len(self.trucks)
 
     def num_nonempty_trucks(self) -> int:
         """Return the number of non-empty trucks in this fleet.
@@ -116,8 +174,12 @@ class Fleet:
         >>> f.num_nonempty_trucks()
         2
         """
-        # TODO: Complete this method.
-        pass
+
+        res = 0
+        for t in self.trucks:
+            if t.fullness() > 0.0:
+                res += 1
+        return res
 
     def parcel_allocations(self) -> Dict[int, List[int]]:
         """Return a dictionary in which each key is the ID of a truck in this
@@ -141,8 +203,14 @@ class Fleet:
         >>> f.parcel_allocations() == {1423: [27, 12], 1333: [28]}
         True
         """
-        # TODO: Complete this method.
-        pass
+
+        dic = {}
+        for t in self.trucks:
+            p_id = []
+            for p in t.parcels:
+                p_id.append(p.parcel_id)
+            dic[t.truck_id] = p_id
+        return dic
 
     def total_unused_space(self) -> int:
         """Return the total unused space, summed over all non-empty trucks in
@@ -160,8 +228,15 @@ class Fleet:
         >>> f.total_unused_space()
         995
         """
-        # TODO: Complete this method.
-        pass
+
+        res = 0
+        for t in self.trucks:
+            if t.fullness() > 0.0:
+                count = 0
+                for p in t.parcels:
+                    count += p.volume
+                res += t.volume_capacity - count
+        return res
 
     def _total_fullness(self) -> float:
         """Return the sum of truck.fullness() for each non-empty truck in the
@@ -180,8 +255,12 @@ class Fleet:
         >>> f._total_fullness()
         50.0
         """
-        # TODO: Complete this method.
-        pass
+
+        res = 0
+        for t in self.trucks:
+            if t.fullness() != 0:
+                res += t.fullness()
+        return res
 
     def average_fullness(self) -> float:
         """Return the average percent fullness of all non-empty trucks in the
@@ -198,8 +277,13 @@ class Fleet:
         >>> f.average_fullness()
         50.0
         """
-        # TODO: Complete this method.
-        pass
+        res = 0
+        count = 0
+        for t in self.trucks:
+            if t.fullness() != 0:
+                count += 1
+                res += t.fullness()
+        return res / count
 
     def total_distance_travelled(self, dmap: DistanceMap) -> int:
         """Return the total distance travelled by the trucks in this fleet,
@@ -225,8 +309,14 @@ class Fleet:
         >>> f.total_distance_travelled(m)
         36
         """
-        # TODO: Complete this method.
-        pass
+
+        res = 0
+        for t in self.trucks:
+            for i in range((len(t.route)) - 1):
+                res += dmap.distance(t.route[i], t.route[i + 1])
+            if t.route[-1] != t.depot:
+                res += dmap.distance(t.route[-1], t.depot)
+        return res
 
     def average_distance_travelled(self, dmap: DistanceMap) -> float:
         """Return the average distance travelled by the trucks in this fleet,
@@ -257,8 +347,12 @@ class Fleet:
         >>> f.average_distance_travelled(m)
         18.0
         """
-        # TODO: Complete this method.
-        pass
+
+        count = 0
+        for t in self.trucks:
+            if t.fullness() != 0:
+                count += 1
+        return self.total_distance_travelled(dmap) / count
 
 
 if __name__ == '__main__':

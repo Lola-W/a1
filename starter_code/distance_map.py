@@ -23,12 +23,49 @@ from the map file. (All reading from files is done in module experiment.)
 Instead, it provides public methods that can be called to store and look up
 distances.
 """
-from typing import Dict
+from typing import Dict, Optional
 
 
 class DistanceMap:
-    # TODO: Implement this class!
-    pass
+    """
+
+    === Private Attributes ===
+    _city1: str
+    _city2: str
+    _distance1: int
+    _distance2: int
+    _map: Dict[Tuple[str, str], int]
+
+    """
+    _city1: str
+    _city2: str
+    _distance: int
+    _map: Dict[tuple[str, str], int]
+
+    def __init__(self) -> None:
+        self._map = {}
+
+    def add_distance(self, city1: str, city2: str,
+                     distance1: int, distance2: Optional[int] = None) -> None:
+        """
+        Adding distance to the _map
+        """
+        self._map[(city1, city2)] = distance1
+        if isinstance(distance2, int):
+            self._map[(city2, city1)] = distance2
+        else:
+            self._map[(city2, city1)] = distance1
+
+    def distance(self, city1: str, city2: str) -> int:
+        """
+        Return the recorded distance, if not return -1.
+
+        """
+
+        if (city1, city2) in self._map:
+            return self._map[(city1, city2)]
+        else:
+            return -1
 
 
 if __name__ == '__main__':
