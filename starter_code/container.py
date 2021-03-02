@@ -116,8 +116,16 @@ class PriorityQueue(Container):
         >>> pq._queue
         ['monalisa', 'arju', 'fred']
         """
-        # TODO: Implement this method!
-        pass
+
+        if self.is_empty():
+            self._queue.append(item)
+        for i in range(len(self._queue)):
+            y = self._queue[i]
+            if not self._higher_priority(item, y) and item not in self._queue:
+                self._queue[i] = item
+                self._queue.insert(i + 1, y)
+        if item not in self._queue:
+            self._queue.append(item)
 
     def remove(self) -> Any:
         """Remove and return the next item from this PriorityQueue.
